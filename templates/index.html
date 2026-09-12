@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Timing Attack Lab</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Timing Attack Lab</h1>
+    <p>
+      Это намеренно уязвимая учебная страница. Сервер добавляет небольшую
+      задержку за каждый правильно угаданный символ.
+    </p>
+
+    <label for="password">Пароль</label>
+    <input id="password" type="text" autocomplete="off"
+           placeholder="Введите тестовый вариант">
+
+    <button id="check">Проверить</button>
+
+    <pre id="result">Готово.</pre>
+
+    <hr>
+    <p class="small">
+      Используйте только для этого учебного стенда. Секрет задаётся
+      переменной LAB_SECRET на сервере.
+    </p>
+  </main>
+
+<script>
+const input = document.getElementById("password");
+const button = document.getElementById("check");
+const result = document.getElementById("result");
+
+button.addEventListener("click", async () => {
+  button.disabled = true;
+  result.textContent = "Проверка...";
+
+  try {
+    const r = await fetch("/check", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({password: input.value})
+    });
+
+    const data = await r.json();
+
+    result.textContent =
+      `Результат: ${data.ok ? "ПРАВИЛЬНЫЙ" : "неправильный"}\n` +
+      `Время проверки: ${data.elapsed_ms} ms\n` +
+      `Длина ввода: ${data.length}`;
+  } catch (e) {
+    result.textContent = "Ошибка: " + e;
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
